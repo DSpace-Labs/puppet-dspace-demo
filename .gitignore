@@ -1,0 +1,22 @@
+# Ignore .tmp and .librarian directories (used by librarian-puppet)
+.librarian/
+.tmp/
+
+# Ignore top-level modules/ directory (managed by librarian-puppet)
+/modules/
+
+# Ignore lock on Puppetfile (for librarian-puppet)
+/Puppetfile.lock
+
+# Ignore top-level hieradata/ directory (created/managed by cloud-init.yaml script)
+/hieradata/
+
+# Ignore .vagrant subdirectories and anything underneath it (used by Vagrant)
+.vagrant/
+
+# Ignore custom local Vagrant facts file (option to modify default Vagrant provisioning)
+/vagrant/local-facts.yaml
+
+# Ignore anything in "vagrant/content/" subfolder, except for the README.md
+/vagrant/content/*
+!/vagrant/content/README.md

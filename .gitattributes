@@ -1,0 +1,6 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# For 'cloud-init.yaml', ensure LF (Unix) line endings are ALWAYS
+# kept (even on Windows), as this is an Ubuntu 'cloud-init' script
+/cloud-init.yaml text eol=lf
