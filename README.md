@@ -30,7 +30,7 @@ Here's what the [`cloud-init.yaml`](https://github.com/duraspace/puppet-dspace-d
 1. Sets the server hostname & FQDN
 2. Adds all necessary Apt repositories
 3. Runs 'apt-get update' and 'apt-get upgrade' to ensure all is up-to-date (reboots if needed)
-4. Installs all necessary software on server (e.g. Puppet, AWS CLI, librarian-puppet, Git)
+4. Installs all necessary software on server (e.g. Puppet, librarian-puppet, Git)
 5. Clones this 'puppet-dspace-demo' GitHub repo to server (at `/etc/puppet/`)
 6. Runs '[librarian-puppet](http://librarian-puppet.com/)' to install any Puppet module dependencies (specified in Puppetfile)
 7. Runs `puppet apply /etc/puppet/manifests/site.pp` to finish the setup of the server
