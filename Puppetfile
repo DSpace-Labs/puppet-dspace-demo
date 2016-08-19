@@ -18,4 +18,4 @@ mod "puppetlabs-tomcat", "1.3.2"
 
 # Custom Module to install DSpace
 mod "tdonohue/dspace",
-   :git => "git@github.com:tdonohue/puppet-dspace.git"
+   :git => "https://github.com/tdonohue/puppet-dspace.git"
