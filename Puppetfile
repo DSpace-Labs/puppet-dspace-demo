@@ -6,15 +6,15 @@ forge "https://forgeapi.puppetlabs.com"
 
 # Install PuppetLabs Standard Libraries (includes various useful puppet methods)
 # See: https://github.com/puppetlabs/puppetlabs-stdlib
-mod "puppetlabs-stdlib", "4.11.0"
+mod "puppetlabs-stdlib", "4.12.0"
 
 # Install Puppet Labs PostgreSQL module
 # https://github.com/puppetlabs/puppetlabs-postgresql/
-mod "puppetlabs-postgresql", "4.6.0"
+mod "puppetlabs-postgresql", "4.8.0"
 
 # Install Puppet Labs Tomcat module
 # https://github.com/puppetlabs/puppetlabs-tomcat/
-mod "puppetlabs-tomcat", "1.3.2"
+mod "puppetlabs-tomcat", "1.5.0"
 
 # Custom Module to install DSpace
 mod "tdonohue/dspace",
