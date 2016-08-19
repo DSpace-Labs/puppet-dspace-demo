@@ -2,12 +2,20 @@
 # This installs necessary third-party Puppet Modules for us.
 
 # Default forge to download modules from
-forge "http://forge.puppetlabs.com"
+forge "https://forgeapi.puppetlabs.com"
 
 # Install PuppetLabs Standard Libraries (includes various useful puppet methods)
 # See: https://github.com/puppetlabs/puppetlabs-stdlib
-mod "puppetlabs/stdlib"
+mod "puppetlabs-stdlib", "4.11.0"
 
-# Install our DuraSpace "server" (private) module via SSH
-mod "duraspace/server",
-   :git => "git@github.com:duraspace/puppet-server.git"
+# Install Puppet Labs PostgreSQL module
+# https://github.com/puppetlabs/puppetlabs-postgresql/
+mod "puppetlabs-postgresql", "4.6.0"
+
+# Install Puppet Labs Tomcat module
+# https://github.com/puppetlabs/puppetlabs-tomcat/
+mod "puppetlabs-tomcat", "1.3.2"
+
+# Custom Module to install DSpace
+mod "tdonohue/dspace"
+   :git => "git@github.com:tdonohue/puppet-dspace.git"

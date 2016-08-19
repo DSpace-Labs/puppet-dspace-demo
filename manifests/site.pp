@@ -2,27 +2,77 @@
 # site.pp
 #
 # This Puppet script does the following:
-# * Initializes the 'server' (with default settings in Hiera)
-# * Creates the Staff user accounts (configured in Hiera)
+# 1. Initializes the VM
+# 2. Installs base DSpace prerequisites (Java, Maven, Ant) via our custom "dspace" Puppet module
+# 3. Installs PostgreSQL (via a third party Puppet module)
+# 4. Installs Tomcat (via a third party Puppet module)
+# 5. Installs DSpace via our custom "dspace" Puppet Module
+#
+# Tested on:
+# - Ubuntu 16.04LTS
 ##
 
-###################
-# Initialize Server
-###################
-include server
-
-##########################
-# Setup all Staff Accounts (based on Hiera data configuration)
-##########################
-# Create the 'staff' group for our staff users (if it doesn't already exist)
-group { "staff":
-  ensure => present,        
-  gid => 50,        # On Ubuntu, 50 is the default gid for this "staff" group
+# Global default to requiring all packages be installed & apt-update to be run first
+Package {
+  ensure => latest,                # requires latest version of each package to be installed
+  require => Exec["apt-get-update"],
 }
 
-# These next few lines load the Hiera data configs and creates a new "server::user"
-# for every user defined under "User_Accts" in the 'hieradata/common.yaml' file.
-# Concept borrowed from http://drewblessing.com/blog/-/blogs/puppet-hiera-implement-defined-resource-types-in-hiera
+# Global default path settings for all 'exec' commands
+Exec {
+  path => "/usr/bin:/usr/sbin/:/bin:/sbin:/usr/local/bin:/usr/local/sbin",
+}
 
-$user_accts = hiera('User_Accts', []) # First read the site configs under "User_Accts" (default to doing nothing, [], if nothing is defined under "User_Accts")
-create_resources('server::user', $user_accts) # Then, create a new "server::user" for each account
+# Run apt-get update before installing anything
+exec {"apt-get-update":
+  command => "/usr/bin/apt-get update",
+  refreshonly => true, # only run if notified
+}
+
+#--------------------------------------------------
+# Initialize base pre-requisites (Java, Maven, Ant)
+#--------------------------------------------------
+# Initialize the DSpace module in order to install base prerequisites.
+# These prerequisites are simply installed via the OS package manager
+# in the DSpace module's init.pp script
+include dspace
+
+->
+
+#--------------------------------
+# Create DSpace OS owner
+#--------------------------------
+class { 'dspace::owner':
+  username => 'dspace',
+  sudoer   => true,
+}
+
+->
+
+#---------------------------------
+# Install PostgreSQL prerequisite
+#---------------------------------
+class { 'dspace::postgres':
+  version => '9.4',
+}
+
+->
+
+#-----------------------------
+# Install Tomcat prerequisite
+#-----------------------------
+class { 'dspace::tomcat':
+  package => 'tomcat7',
+  owner   => 'dspace',
+}
+
+#->
+
+#---------------------
+# Install DSpace
+#---------------------
+#class { 'dspace::install':
+#  owner   => 'dspace',
+#  version => '6.0-SNAPSHOT',
+#  notify  => Service['tomcat'],
+#}

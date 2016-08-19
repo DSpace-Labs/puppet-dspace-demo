@@ -25,11 +25,12 @@ apt_sources:
  - source: deb http://archive.canonical.com/ubuntu $RELEASE partner
  - source: deb-src http://archive.canonical.com/ubuntu $RELEASE partner
  # Enable PuppetLabs repos (for latest puppet)
+ # GPG Key is from https://docs.puppetlabs.com/guides/puppetlabs_package_verification.html
  - source: deb http://apt.puppetlabs.com $RELEASE main dependencies
-   keyid: 4BD6EC30    # GPG key ID published on a key server
+   keyid: 1054b7a24bd6ec30    # GPG key ID published on a key server
    filename: puppetlabs.list
  - source: deb-src http://apt.puppetlabs.com $RELEASE main dependencies
-   keyid: 4BD6EC30    # GPG key ID published on a key server
+   keyid: 1054b7a24bd6ec30    # GPG key ID published on a key server
    filename: puppetlabs.list
 
 # Run 'apt-get update' on first boot
@@ -45,8 +46,8 @@ apt_reboot_if_required: True
 packages:
  - wget
  - git
+ - ruby1.9.3  # Needed for latest version of librarian-puppet
  - puppet
- - ruby       # Used to install librarian-puppet
  - python-pip # Used to install AWS CLI
 
 # run commands
@@ -57,25 +58,23 @@ runcmd:
  - [sh, -c, "umask 0226; echo 'Defaults env_keep += \"SSH_AUTH_SOCK\"' > /etc/sudoers.d/ssh-auth-sock"]
  # Install AWS CLI
  - pip install awscli
+ # Update rubygems to latest version
+ - gem install --no-ri --no-rdoc rubygems-update
+ - update_rubygems >/dev/null
  # Set our AWS default region and FQDN (used by s3 commands)
  - export AWS_DEFAULT_REGION="us-east-1"
  - FQDN=`hostname -f`
- # Get GitHub SSH keys & access restrict them
- - mkdir -p /root/.ssh && aws s3 cp s3://dspacedemo-setup/ssh/ /root/.ssh/ --recursive && chmod 600 /root/.ssh/id_rsa
  # Add github.com to known_hosts
  - ssh -T -oStrictHostKeyChecking=no git@github.com
  # Clone our puppet repo to /etc/puppet
- - rm -rf /etc/puppet/*
- - git clone git@github.com:duraspace/puppet-dspace-demo.git /etc/puppet
- # Install puppet module dependencies
- - gem install librarian-puppet --version 2.0.1
- - cd /etc/puppet && HOME=/root librarian-puppet install
- # Get hiera data files for puppet & access restrict them
- - mkdir -p /etc/puppet/hieradata && aws s3 cp s3://dspacedemo-setup/hieradata/ /etc/puppet/hieradata/ --recursive && chmod 750 /etc/puppet/hieradata
- # Run puppet
- - puppet apply /etc/puppet/manifests/site.pp -v
- # Cleanup GitHub SSH keys
- - rm /root/.ssh/id_rsa*
+ - PUPPET_DIR="/etc/puppet"
+ - rm -rf $PUPPET_DIR/*
+ - git clone git@github.com:duraspace/puppet-dspace-demo.git $PUPPET_DIR
+ # Install puppet module dependencies (via librarian-puppet)
+ - gem install librarian-puppet --version 2.2.1
+ - cd $PUPPET_DIR && HOME=/root librarian-puppet install
+  # Run puppet
+ - puppet apply $PUPPET_DIR/manifests/site.pp -v
 
 # boot commands
 # These are like 'runcmd', but run very early in the boot process & run on every boot by default.

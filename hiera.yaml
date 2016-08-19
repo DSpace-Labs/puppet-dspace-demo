@@ -9,7 +9,7 @@
 
 # Use YAML formatted configuration files
 # YAML format: http://en.wikipedia.org/wiki/YAML
-:backends: 
+:backends:
   - yaml
 
 # Look for YAML config files in 'hieradata' subdirectory
@@ -19,9 +19,8 @@
 # Look for a YAML config file corresponding to 'fully qualified domain name' fact (i.e. facter | grep fqdn)
 # Then load 'common.yaml' for any common/shared settings
 :hierarchy:
-  - %{::fqdn}
+  - "%{::fqdn}"
   - common
-  - staff
 
 # Log all output to console (stdout)
 :logger: console
