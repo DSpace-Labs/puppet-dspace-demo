@@ -37,42 +37,42 @@ exec {"apt-get-update":
 # in the DSpace module's init.pp script
 include dspace
 
-->
-
 #--------------------------------
-# Create DSpace OS owner
+# Create DSpace OS owner named 'dspace'
 #--------------------------------
-class { 'dspace::owner':
-  username => 'dspace',
+dspace::owner { 'dspace':
   sudoer   => true,
 }
 
 ->
 
-#---------------------------------
-# Install PostgreSQL prerequisite
-#---------------------------------
-class { 'dspace::postgres':
-  version => '9.4',
+#--------------------------------------------
+# Create a PostgreSQL database named 'dspace'
+#--------------------------------------------
+dspace::postgresql_db { 'dspace':
+  version  => '9.4',
+  user     => 'dspace',   # DB user (owner of DB)
+  password => 'dspace',   # DB user password
 }
 
 ->
 
-#-----------------------------
-# Install Tomcat prerequisite
-#-----------------------------
-class { 'dspace::tomcat':
-  package => 'tomcat7',
-  owner   => 'dspace',
+#-------------------------------------------
+# Install Tomcat, and tell it to use
+# ~/dspace/webapps as the webapps location
+#-------------------------------------------
+dspace::tomcat { '/home/dspace/dspace/webapps' :
+  package => 'tomcat8',
+  owner   => 'dspace',           # Owned by OS user 'dspace'
 }
 
 #->
 
-#---------------------
-# Install DSpace
-#---------------------
-#class { 'dspace::install':
-#  owner   => 'dspace',
+#-------------------------------------------
+# Install DSpace in the specified directory
+#-------------------------------------------
+#dspace::install { '/home/dspace/dspace' :
+#  owner   => 'dspace',          # Owned by OS user 'dspace'
 #  version => '6.0-SNAPSHOT',
-#  notify  => Service['tomcat'],
+#  notify  => Service['tomcat'], # Tell Tomcat to reboot after install
 #}

@@ -46,7 +46,7 @@ apt_reboot_if_required: True
 packages:
  - wget
  - git
- - ruby1.9.3  # Needed for latest version of librarian-puppet
+ - ruby       # Needed for librarian-puppet
  - puppet
  - python-pip # Used to install AWS CLI
 
@@ -56,14 +56,13 @@ packages:
 runcmd:
  # Tell sudo to respect SSH Agent forwarding
  - [sh, -c, "umask 0226; echo 'Defaults env_keep += \"SSH_AUTH_SOCK\"' > /etc/sudoers.d/ssh-auth-sock"]
+ # Ensure pip is latest version
+ - pip install --upgrade pip
  # Install AWS CLI
  - pip install awscli
  # Update rubygems to latest version
  - gem install --no-ri --no-rdoc rubygems-update
  - update_rubygems >/dev/null
- # Set our AWS default region and FQDN (used by s3 commands)
- - export AWS_DEFAULT_REGION="us-east-1"
- - FQDN=`hostname -f`
  # Add github.com to known_hosts
  - ssh -T -oStrictHostKeyChecking=no git@github.com
  # Clone our puppet repo to /etc/puppet
@@ -71,7 +70,7 @@ runcmd:
  - rm -rf $PUPPET_DIR/*
  - git clone git@github.com:tdonohue/puppet-dspace-demo.git $PUPPET_DIR
  # Install puppet module dependencies (via librarian-puppet)
- - gem install librarian-puppet --version 2.2.1
+ - gem install librarian-puppet --version 2.2.3
  - cd $PUPPET_DIR && HOME=/root librarian-puppet install
   # Run puppet
  - puppet apply $PUPPET_DIR/manifests/site.pp -v
