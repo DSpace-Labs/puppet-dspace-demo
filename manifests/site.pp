@@ -44,8 +44,6 @@ dspace::owner { 'dspace':
   sudoer   => true,
 }
 
-->
-
 #--------------------------------------------
 # Create a PostgreSQL database named 'dspace'
 #--------------------------------------------
@@ -55,9 +53,9 @@ dspace::postgresql_db { 'dspace':
   user              => 'dspace',   # DB owner
   password          => 'dspace',   # DB owner password
   port              => 5432,
+  require           => Dspace::Owner['dspace'],
 }
 
-->
 
 #-------------------------------------------
 # Install Tomcat instance, and tell it to use
@@ -67,9 +65,9 @@ dspace::tomcat_instance { '/home/dspace/dspace/webapps' :
   package => 'tomcat8',
   owner   => 'dspace',           # Owned by OS user 'dspace'
   port    => 8080,
+  require => Dspace::Owner['dspace'],
 }
 
-#->
 
 #-------------------------------------------
 # Install DSpace in the specified directory
@@ -77,5 +75,6 @@ dspace::tomcat_instance { '/home/dspace/dspace/webapps' :
 #dspace::install { '/home/dspace/dspace' :
 #  owner   => 'dspace',          # Owned by OS user 'dspace'
 #  version => '6.0-SNAPSHOT',
+#  require => [DSpace::Postgresql_db['dspace'], DSpace::Tomcat_instance['/home/dspace/dspace/webapps']],
 #  notify  => Service['tomcat'], # Tell Tomcat to reboot after install
 #}
