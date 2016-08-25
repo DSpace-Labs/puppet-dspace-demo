@@ -48,7 +48,7 @@ dspace::owner { 'dspace':
 # Create a PostgreSQL database named 'dspace'
 #--------------------------------------------
 dspace::postgresql_db { 'dspace':
-  version           => '9.4',
+  version           => '9.5',
   postgres_password => 'postgres', # DB root password (for postgres superuser)
   user              => 'dspace',   # DB owner
   password          => 'dspace',   # DB owner password
