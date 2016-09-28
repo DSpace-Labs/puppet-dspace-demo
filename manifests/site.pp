@@ -114,13 +114,13 @@ dspace::install { "/home/${dspace::owner}/dspace" :
 # https://github.com/psi-probe/psi-probe
 $probe_version = "2.4.0.SP1"
 exec {"Download and install the PSI Probe v${probe_version} war":
-  command   => "wget --quiet --continue https://github.com/psi-probe/psi-probe/releases/download/${probe_version}/probe.war",
+  command   => "/usr/bin/wget --quiet --continue https://github.com/psi-probe/psi-probe/releases/download/${probe_version}/probe.war",
   cwd       => "${dspace::catalina_base}/webapps",
   creates   => "${dspace::catalina_base}/webapps/probe.war",
-  user      => "vagrant",
+  user      => $dspace::owner,
   logoutput => true,
   tries     => 3,                            # In case of a network hiccup, try this download 3 times
-  require   => File[$dspace::catalina_base], # CATALINA_BASE must exist before downloading
+  require   => [File[$dspace::catalina_base], Dspace::Owner[$dspace::owner]], # CATALINA_BASE must exist before downloading
 }
 
 ->
