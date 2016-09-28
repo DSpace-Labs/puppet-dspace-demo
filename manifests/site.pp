@@ -72,6 +72,7 @@ dspace::owner { $dspace::owner :
 # Create the PostgreSQL database (based on above global settings)
 #----------------------------------------------------------------
 dspace::postgresql_db { $dspace::db_name :
+  require => Dspace::Owner[$dspace::owner],
 }
 
 #-----------------------------------------------------
@@ -79,6 +80,7 @@ dspace::postgresql_db { $dspace::db_name :
 # Tell it to use owner's ~/dspace/webapps as the webapps location
 #-----------------------------------------------------
 dspace::tomcat_instance { "/home/${dspace::owner}/dspace/webapps" :
+  require => Dspace::Owner[$dspace::owner],
 }
 
 # Link ~/tomcat to Tomcat installation for easy finding
@@ -93,6 +95,7 @@ file { "/home/${dspace::owner}/tomcat" :
 #----------------------------------------
 dspace::apache_site { "demo.dspace.org" :
   ssl => true,
+  require => Dspace::Tomcat_instance["/home/${dspace::owner}/dspace/webapps"],
 }
 
 #---------------------------------------------------
