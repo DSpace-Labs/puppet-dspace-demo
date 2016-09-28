@@ -14,9 +14,10 @@ This includes the following:
 How to use it
 -------------
 
-1. Spin up a new Ubuntu 16.04 LTS (64-bit, [HVM Virtualization](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/virtualization_types.html), EBS-SSD boot), e.g. [ami-c60b90d1](https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-c60b90d1) from Ubuntu's [Amazon EC2 AMI Locator](https://cloud-images.ubuntu.com/locator/ec2/)
+1. Spin up a new Ubuntu 16.04 LTS (64-bit, [HVM Virtualization](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/virtualization_types.html), EBS-SSD boot), e.g. [ami-e3c3b8f4](https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=ami-e3c3b8f4) from Ubuntu's [Amazon EC2 AMI Locator](https://cloud-images.ubuntu.com/locator/ec2/)
    * Select instance size (currently using 'm3.medium' for demo.dspace.org)
    * Upload the included 'cloud-init.yaml' as "User Data"
+   * Storage: Update to at least 75GB storage for ROOT
    * Launch the instance
 2. Sit back and wait while 'cloud-init' & Puppet does all the hard work for you.
 

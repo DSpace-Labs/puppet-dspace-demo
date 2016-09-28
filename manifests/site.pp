@@ -60,8 +60,12 @@ class { 'dspace':
 #----------------------------------------------------------------
 # Create the DSpace owner and populate any of the owner's configs
 #----------------------------------------------------------------
+# This also saves our Committer public SSH keys to ~/.ssh/authorized_keys
+# See the ./files/authorized_keys file.
 dspace::owner { $dspace::owner :
-  sudoer   => true,
+  gid                    => $dspace::group,
+  sudoer                 => true,
+  authorized_keys_source => "puppet:///files/ssh_authorized_keys",
 }
 
 #----------------------------------------------------------------
@@ -118,13 +122,30 @@ exec {"Download and install the PSI Probe v${probe_version} war":
 
 ->
 
-# Add a context fragment file for Psi-probe, and restart tomcat
-file { "${dspace::catalina_base}/conf/Catalina/localhost/probe.xml" :
-  ensure  => file,
-  owner   => vagrant,
-  group   => vagrant,
-  content => template("dspace/probe.xml.erb"),
-  notify  => Service['tomcat'],
+# Add a Tomcat Context for / (root path) to point at this ROOT webapp
+tomcat::config::server::context { 'Enable PSI Probe (/probe) context in Tomcat':
+  catalina_base  => $dspace::catalina_base,
+  context_ensure => present,
+  doc_base       => "${dspace::catalina_base}/webapps/probe.war",
+  parent_engine  => 'Catalina',
+  parent_host    => 'localhost',
+  additional_attributes => {
+    'path' => '/probe',
+    'privileged' => 'true',
+  },
+  notify         => Service['tomcat'],   # If changes are made, notify Tomcat to restart
+}
+
+->
+
+# Setup the UserDatabase for authentication to PSI Probe
+tomcat::config::context::resourcelink { 'Enable Users database in Tomcat for PSI Probe':
+  catalina_base  => $dspace::catalina_base,
+  resourcelink_name => 'users',
+  resourcelink_type => 'org.apache.catalina.UserDatabase',
+  additional_attributes => {
+    'global' => 'UserDatabase',
+  },
 }
 
 ->
@@ -162,23 +183,6 @@ exec { "Untar YourKit ${yourkit_tarfile} to /opt/yjp":
 }
 
 #-------------------------------------
-# Install / Setup Cron Jobs
-#-------------------------------------
-# Install mycrontab (from /etc/puppet/files/ to ~)
-file { "/home/${dspace::owner}/mycrontab" :
-  ensure  => file,
-  owner   => $dspace::owner,
-  group   => $dspace::group,
-  source  => "puppet:///files/mycrontab",
-}
-
-exec { "Init Cron Jobs from /home/${dspace::owner}/mycrontab":
-  command     => "/usr/bin/crontab /home/${dspace::owner}/mycrontab",
-  subscribe   => File["/home/${dspace::owner}/mycrontab"],
-  refreshonly => true,
-}
-
-#-------------------------------------
 # Install / Setup Splash Page
 #-------------------------------------
 # if the ROOT Tomcat webapp does not yet exist, create it
@@ -198,6 +202,7 @@ exec { "Cloning demo.dspace.org source into ${dspace::catalina_base}/webapps/ROO
   logoutput => true,
   tries     => 4,    # try 4 times
   timeout   => 600,  # set a 10 min timeout.
+  require   => File["${dspace::catalina_base}/webapps/ROOT"],
 }
 
 # Add a Tomcat Context for / (root path) to point at this ROOT webapp
@@ -210,5 +215,32 @@ tomcat::config::server::context { 'Enable splashpage at ROOT (/) context in Tomc
   additional_attributes => {
     'path' => '/',
   },
+  require        => File["${dspace::catalina_base}/webapps/ROOT"],
   notify         => Service['tomcat'],   # If changes are made, notify Tomcat to restart
+}
+
+#-------------------------------------
+# Install / Setup ~/bin/ scripts
+#-------------------------------------
+# Link the ~/bin directory to the Linux scripts provided under webapp ./scripts/linux folder
+file { "/home/${dspace::owner}/bin" :
+  ensure  => link,
+  target  => "${dspace::catalina_base}/webapps/ROOT/scripts/linux",
+  require => Exec["Cloning demo.dspace.org source into ${dspace::catalina_base}/webapps/ROOT/"],
+}
+
+#-------------------------------------
+# Install / Setup Cron Jobs
+#-------------------------------------
+# Install mycrontab (provided in demo.dspace.org source repo)
+file { "/home/${dspace::owner}/mycrontab" :
+  ensure  => link,
+  target  => "${dspace::catalina_base}/webapps/ROOT/scripts/linux/crontab",
+  require => Exec["Cloning demo.dspace.org source into ${dspace::catalina_base}/webapps/ROOT/"],
+}
+
+exec { "Init Cron Jobs from /home/${dspace::owner}/mycrontab":
+  command     => "/usr/bin/crontab /home/${dspace::owner}/mycrontab",
+  subscribe   => File["/home/${dspace::owner}/mycrontab"],
+  refreshonly => true,
 }
