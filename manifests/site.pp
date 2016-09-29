@@ -158,7 +158,7 @@ tomcat::config::context::resourcelink { 'Enable Users database in Tomcat for PSI
 file_line { 'Add \'dspace\' Tomcat user for PSI Probe':
   path    => "${dspace::catalina_base}/conf/tomcat-users.xml", # File to modify
   after   => '<tomcat-users>',                         # Add content immediately after this line
-  line    => '<role rolename="manager"/><user username="dspace" password="dspace" roles="manager"/>', # Lines to add to file
+  line    => '<role rolename="probeuser"/><user username="dspace" password="dspace" roles="probeuser"/>', # Lines to add to file
   notify  => Service['tomcat'],                        # If changes are made, notify Tomcat to restart
 }
 
@@ -246,4 +246,14 @@ exec { "Init Cron Jobs from /home/${dspace::owner}/mycrontab":
   command     => "/usr/bin/crontab /home/${dspace::owner}/mycrontab",
   subscribe   => File["/home/${dspace::owner}/mycrontab"],
   refreshonly => true,
+}
+
+
+#-----------------------------------------
+# Install custom Message of the Day (MOTD)
+#-----------------------------------------
+# In Ubuntu 16.04, /etc/motd will be appended on the dynamic MOTD
+file { "/etc/motd" :
+  ensure => file,
+  source => "puppet:///files/motd",
 }

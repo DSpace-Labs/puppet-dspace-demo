@@ -1,0 +1,22 @@
+######################################################
+#         Welcome to demo.dspace.org                 #
+######################################################
+
+A Few Stop/Start Hints:
+
+* Tomcat:
+      sudo service tomcat7 [start|stop|restart]
+* PostgreSQL:
+      sudo service postgresql [start|stop|restart]
+* Handle Server:
+      ~/dspace/bin/start-handle-server
+
+Much more information on Wiki at:
+
+https://wiki.duraspace.org/display/DSPACE/demo.dspace.org+Notes
+
+#####################################################
+Questions/Problems?
+
+Contact tdonohue@duraspace.org or sysadmin@duraspace.org
+#####################################################
