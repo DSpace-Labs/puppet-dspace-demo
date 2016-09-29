@@ -98,13 +98,33 @@ dspace::apache_site { "demo.dspace.org" :
   require => Dspace::Tomcat_instance["/home/${dspace::owner}/dspace/webapps"],
 }
 
+
 #---------------------------------------------------
 # Install DSpace in the owner's ~/dspace/ directory
 #---------------------------------------------------
+# Download our local.cfg file from a *private* S3 folder (copy it to ~/local.cfg)
+$local_cfg_in_s3 = "s3://dspacedemo-setup/config/local.cfg"
+exec { "Download local.cfg from ${local_cfg_in_s3}" :
+  command => "/usr/local/bin/aws s3 cp ${local_cfg_in_s3} . && chown ${dspace::owner}:${dspace::group} local.cfg",
+  cwd     => "/home/${dspace::owner}/",
+  creates => "/home/${dspace::owner}/local.cfg",
+}
+
+# Actually install DSpace
 dspace::install { "/home/${dspace::owner}/dspace" :
-  require => DSpace::Postgresql_db[$dspace::db_name], # Must first have a database
+  local_config_source => "file:///home/${dspace::owner}/local.cfg",
+  require => [DSpace::Postgresql_db[$dspace::db_name],             # Must first have a database
+              Exec["Download local.cfg from ${local_cfg_in_s3}"]], # and local.cfg
   notify  => Service['tomcat'],                       # Tell Tomcat to reboot after install
 }
+
+# Create a daily cron job to sync changes to local.cfg up to private S3 folder
+file { "/etc/cron.daily/sync-local-cfg-to-s3" :
+  ensure  => file,
+  mode    => 0755,
+  content => "/usr/local/bin/aws s3 cp /home/${dspace::owner}/dspace/config/local.cfg ${local_cfg_in_s3} --sse",
+  require => Dspace::Install["/home/${dspace::owner}/dspace"],
+} 
 
 
 #---------------------
@@ -273,11 +293,9 @@ file { "/home/${dspace::owner}/README" :
 # Install / Setup 'kompewter' IRC bot
 #-----------------------------------------
 # Install required packages for kompewter
-package { 'python-setuptools': }
-
-->
-
-exec { "/usr/bin/easy_install BeautifulSoup": }
+exec { '/usr/local/bin/pip install BeautifulSoup': 
+  unless => '/usr/local/bin/pip list | /bin/grep BeautifulSoup 2>/dev/null',
+}
 
 ->
 
