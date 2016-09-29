@@ -10,6 +10,8 @@ A Few Stop/Start Hints:
       sudo service postgresql [start|stop|restart]
 * Handle Server:
       ~/dspace/bin/start-handle-server
+* 'kompewter' IRC bot:
+      nohup ~/kompewter/jenni > ~/kompewter/kompewter.log &
 
 Much more information on Wiki at:
 

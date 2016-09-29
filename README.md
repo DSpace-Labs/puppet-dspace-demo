@@ -1,8 +1,6 @@
 puppet-dspace-demo
 =============
 
-NOT YET FUNCTIONAL / WORK IN PROGRESS.
-
 This repo includes the server initialization files for the 'http://demo.dspace.org' server.
 
 This includes the following:
@@ -20,6 +18,10 @@ How to use it
    * Storage: Update to at least 75GB storage for ROOT
    * Launch the instance
 2. Sit back and wait while 'cloud-init' & Puppet does all the hard work for you.
+3. (Temporary) At this point in time, there's an odd bug where PostgreSQL doesn't startup correctly when Puppet is run from `cloud-init`.  So, you have to MANUALLY trigger the Puppet build.
+   * SSH to the server
+   * Run: `sudo puppet apply /etc/puppet/manifests/site.pp -v`
+   * Wait for Puppet to install DSpace, and setup the Demo server.
 
 
 How it works
@@ -37,6 +39,32 @@ Here's what the [`cloud-init.yaml`](https://github.com/duraspace/puppet-dspace-d
 7. Runs `puppet apply /etc/puppet/manifests/site.pp` to finish the setup of the server
 
 *Note: all actions taken by 'cloud-init' are logged to `/var/log/cloud-init.log`. The output/results are logged to `/var/log/cloud-init-output.log`.*
+
+
+What it sets up
+----------------
+The Puppet script that does all the setup is [`manifests/site.pp`](https://github.com/tdonohue/puppet-dspace-demo/blob/master/manifests/site.pp).
+
+Here's what it currently does:
+
+1. Setup Ubuntu unattended_upgrades (via [puppet-unattended_upgrades](https://github.com/voxpupuli/puppet-unattended_upgrades) module)
+2. Setup DSpace, including all prerequisites (via our separate [puppet-dspace](https://github.com/DSpace/puppet-dspace) module). This includes setting up all of the following:
+  * PostgreSQL database (via [puppetlabs-postgresql](https://github.com/puppetlabs/puppetlabs-postgresql/) module)
+  * Tomcat (via [puppetlabs-tomcat](https://github.com/puppetlabs/puppetlabs-tomcat/) module)
+  * Apache web server (via [puppetlabs-apache](https://github.com/puppetlabs/puppetlabs-apache/) module), communicates with Tomcat via AJP
+  * 'dspace' OS user account (which is the owner of DSpace installation)
+3. Setup splash page (homepage of http://demo.dspace.org), by checking out/installing the https://github.com/DSpace/demo.dspace.org project
+  * Also includes the useful scripts / cron jobs from that project
+4. 'kompewter' IRC bot (from https://github.com/DSpace-Labs/kompewter)
+5. Setup custom Message of the Day for server and other basic files
+
+**WARNING:** Currently this script does NOT recreate or setup the `~dspace/AIP-restore` folder, which is where AIPs are placed to "reset" the entire site on a weekly basis. Therefore, you must manually create that folder and add in the sample/test AIPs for weekly restoration.  In the end, that folder should look something like this:
+
+* `~dspace/AIP-restore/`
+  * `SITE@10673-0.zip` (Site AIP corresponding to 10673/0 handle)
+  * `COMMUNITY@[handle].zip` (one or more Community AIPs using 10673 handle prefix)
+  * `COLLECTION@[handle].zip` (one or more Collection AIPs using 10673 handle prefix)
+  * `ITEM@[handle].zip` (one or more ITEM AIPs using 10673 handle prefix)
 
 
 License

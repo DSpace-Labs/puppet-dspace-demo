@@ -257,3 +257,37 @@ file { "/etc/motd" :
   ensure => file,
   source => "puppet:///files/motd",
 }
+
+
+#-----------------------------------------
+# Install server README for 'dspace' account
+#-----------------------------------------
+file { "/home/${dspace::owner}/README" :
+  ensure => file,
+  source => "puppet:///files/server_README",
+  owner  => $dspace::owner,
+  group  => $dspace::group,
+}
+
+#-----------------------------------------
+# Install / Setup 'kompewter' IRC bot
+#-----------------------------------------
+# Install required packages for kompewter
+package { 'python-setuptools': }
+
+->
+
+exec { "/usr/bin/easy_install BeautifulSoup": }
+
+->
+
+# Clone 'kompewter' project to ~/kompewter
+exec { "Cloning kompewter IRC bot source into /home/${dspace::owner}/kompewter/":
+  command   => "git clone https://github.com/DSpace-Labs/kompewter.git kompewter && chown -R ${dspace::owner}:${dspace::group} kompewter",
+  creates   => "/home/${dspace::owner}/kompewter/.git",
+  cwd       => "/home/${dspace::owner}/", # run command from this directory
+  logoutput => true,
+  tries     => 4,    # try 4 times
+  timeout   => 600,  # set a 10 min timeout.
+  require   => File["/home/${dspace::owner}/"],
+}
