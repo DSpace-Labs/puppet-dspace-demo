@@ -86,7 +86,7 @@ file { "/etc/cron.daily/sync-ssh-to-s3" :
   mode    => 0755,
   content => "/usr/local/bin/aws s3 sync /home/${dspace::owner}/.ssh ${ssh_key_in_s3} --sse",
   require => Dspace::Install["/home/${dspace::owner}/dspace"],
-} 
+}
 
 #----------------------------------------------------------------
 # Create the PostgreSQL database (based on above global settings)
@@ -148,7 +148,7 @@ file { "/etc/cron.daily/sync-local-cfg-to-s3" :
   mode    => 0755,
   content => "/usr/local/bin/aws s3 cp /home/${dspace::owner}/dspace/config/local.cfg ${local_cfg_in_s3} --sse",
   require => Dspace::Install["/home/${dspace::owner}/dspace"],
-} 
+}
 
 
 #---------------------
@@ -243,14 +243,15 @@ file { "${dspace::catalina_base}/webapps/ROOT":
 
 # Clone Splash Page code into ROOT webapp (from DSpace-Labs/demo.dspace.org-site repo)
 exec { "Cloning demo.dspace.org source into ${dspace::catalina_base}/webapps/ROOT/":
-  command   => "rm -rf * && git clone git@github.com:DSpace-Labs/demo.dspace.org-site.git .",
+  command   => "sudo rm -rf * && git clone git@github.com:DSpace-Labs/demo.dspace.org-site.git .",
   creates   => "${dspace::catalina_base}/webapps/ROOT/.git",
   cwd       => "${dspace::catalina_base}/webapps/ROOT", # run command from this directory
   logoutput => true,
   user      => $dspace::owner,
   tries     => 4,    # try 4 times
   timeout   => 600,  # set a 10 min timeout.
-  require   => File["${dspace::catalina_base}/webapps/ROOT"],
+  require   => [File["${dspace::catalina_base}/webapps/ROOT"],
+                Dspace::Owner[$dspace::owner]],
 }
 
 # Add a Tomcat Context for / (root path) to point at this ROOT webapp
@@ -340,7 +341,7 @@ file { "/home/${dspace::owner}/README" :
 # Install / Setup 'kompewter' IRC bot
 #-----------------------------------------
 # Install required packages for kompewter
-exec { '/usr/local/bin/pip install BeautifulSoup': 
+exec { '/usr/local/bin/pip install BeautifulSoup':
   unless => '/usr/local/bin/pip list | /bin/grep BeautifulSoup 2>/dev/null',
 }
 
