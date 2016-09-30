@@ -58,7 +58,7 @@ Here's what it currently does:
 4. 'kompewter' IRC bot (from https://github.com/DSpace-Labs/kompewter)
 5. Setup custom Message of the Day for server and other basic files
 
-**WARNING:** Currently this script does NOT recreate or setup the `~dspace/AIP-restore` folder, which is where AIPs are placed to "reset" the entire site on a weekly basis. Therefore, you must manually create that folder and add in the sample/test AIPs for weekly restoration.  In the end, that folder should look something like this:
+**WARNING:** Currently this script does restore APIs from the `~dspace/AIP-restore` folder. It does download the AIPs from a private S3 location, but you must manually run the restore script. The folder should look something like this:
 
 * `~dspace/AIP-restore/`
   * `SITE@10673-0.zip` (Site AIP corresponding to 10673/0 handle)
