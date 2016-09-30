@@ -4,9 +4,9 @@ puppet-dspace-demo
 This repo includes the server initialization files for the 'http://demo.dspace.org' server.
 
 This includes the following:
-* [`cloud-init.yaml`](https://github.com/tdonohue/puppet-dspace-demo/blob/master/cloud-init.yaml) : a [cloud-init](https://help.ubuntu.com/community/CloudInit) Config data file (to be passed via userdata) to initialize server in EC2
-* [`Puppetfile`](https://github.com/tdonohue/puppet-dspace-demo/blob/master/Puppetfile) : a [librarian-puppet](http://librarian-puppet.com/) config file used to install all necessary Puppet modules
-* [`manifests/site.pp`](https://github.com/tdonohue/puppet-dspace-demo/blob/master/manifests/site.pp) : the actual Puppet script to run via 'puppet apply'
+* [`cloud-init.yaml`](https://github.com/DSpace-Labs/puppet-dspace-demo/blob/master/cloud-init.yaml) : a [cloud-init](https://help.ubuntu.com/community/CloudInit) Config data file (to be passed via userdata) to initialize server in EC2
+* [`Puppetfile`](https://github.com/DSpace-Labs/puppet-dspace-demo/blob/master/Puppetfile) : a [librarian-puppet](http://librarian-puppet.com/) config file used to install all necessary Puppet modules
+* [`manifests/site.pp`](https://github.com/DSpace-Labs/puppet-dspace-demo/blob/master/manifests/site.pp) : the actual Puppet script to run via 'puppet apply'
 * Basic configs required for Puppet
 
 How to use it
@@ -43,7 +43,7 @@ Here's what the [`cloud-init.yaml`](https://github.com/duraspace/puppet-dspace-d
 
 What it sets up
 ----------------
-The Puppet script that does all the setup is [`manifests/site.pp`](https://github.com/tdonohue/puppet-dspace-demo/blob/master/manifests/site.pp).
+The Puppet script that does all the setup is [`manifests/site.pp`](https://github.com/DSpace-Labs/puppet-dspace-demo/blob/master/manifests/site.pp).
 
 Here's what it currently does:
 
