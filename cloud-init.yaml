@@ -67,7 +67,7 @@ runcmd:
  # Clone our puppet repo to /etc/puppet
  - PUPPET_DIR="/etc/puppet"
  - rm -rf $PUPPET_DIR/*
- - git clone https://github.com/tdonohue/puppet-dspace-demo.git $PUPPET_DIR
+ - git clone https://github.com/DSpace-Labs/puppet-dspace-demo.git $PUPPET_DIR
  # Install puppet module dependencies (via librarian-puppet)
  - gem install --no-ri --no-rdoc librarian-puppet --version 2.2.3
  - cd $PUPPET_DIR && HOME=/root librarian-puppet install
