@@ -243,10 +243,11 @@ file { "${dspace::catalina_base}/webapps/ROOT":
 
 # Clone Splash Page code into ROOT webapp (from DSpace-Labs/demo.dspace.org-site repo)
 exec { "Cloning demo.dspace.org source into ${dspace::catalina_base}/webapps/ROOT/":
-  command   => "rm -rf * && git clone git@github.com/DSpace-Labs/demo.dspace.org-site.git . && chown -R ${dspace::owner}:${dspace::group} .",
+  command   => "rm -rf * && git clone git@github.com:DSpace-Labs/demo.dspace.org-site.git .",
   creates   => "${dspace::catalina_base}/webapps/ROOT/.git",
   cwd       => "${dspace::catalina_base}/webapps/ROOT", # run command from this directory
   logoutput => true,
+  user      => $dspace::owner,
   tries     => 4,    # try 4 times
   timeout   => 600,  # set a 10 min timeout.
   require   => File["${dspace::catalina_base}/webapps/ROOT"],
