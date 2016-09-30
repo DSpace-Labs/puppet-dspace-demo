@@ -65,8 +65,28 @@ class { 'dspace':
 dspace::owner { $dspace::owner :
   gid                    => $dspace::group,
   sudoer                 => true,
-  authorized_keys_source => "puppet:///files/ssh_authorized_keys",
+  authorized_keys_source => undef,  # We'll copy in our own authorized keys (see below)
 }
+
+# Download SSH info (authorized_keys, etc) from private S3 folder (copy to ~/.ssh/)
+$ssh_key_in_s3 = "s3://dspacedemo-setup/ssh/"
+exec { "Download demo SSH key/authorizations from ${ssh_key_in_s3}" :
+  command => "/usr/local/bin/aws s3 sync ${ssh_key_in_s3} . && chown ${dspace::owner}:${dspace::group} * && chmod 600 authorized_keys id_rsa && chmod 644 known_hosts id_rsa.pub",
+  cwd     => "/home/${dspace::owner}/.ssh/",
+  creates => "/home/${dspace::owner}/.ssh/id_rsa.pub",
+  require => Dspace::Owner[$dspace::owner],
+  # Need these SSH keys to install anything from GitHub
+  before  => [Dspace::Install["/home/${dspace::owner}/dspace"],
+              Exec["Cloning demo.dspace.org source into ${dspace::catalina_base}/webapps/ROOT/"]],
+}
+
+# Create a daily cron job to sync changes to ~/.ssh up to private S3 folder
+file { "/etc/cron.daily/sync-ssh-to-s3" :
+  ensure  => file,
+  mode    => 0755,
+  content => "/usr/local/bin/aws s3 sync /home/${dspace::owner}/.ssh ${ssh_key_in_s3} --sse",
+  require => Dspace::Install["/home/${dspace::owner}/dspace"],
+} 
 
 #----------------------------------------------------------------
 # Create the PostgreSQL database (based on above global settings)
@@ -110,12 +130,16 @@ exec { "Download local.cfg from ${local_cfg_in_s3}" :
   creates => "/home/${dspace::owner}/local.cfg",
 }
 
-# Actually install DSpace
+# Actually install DSpace from DSpace-Labs/demo.dspace.org (demo branch)
+# NOTE: this is a fork with minor customizations for the demo site
 dspace::install { "/home/${dspace::owner}/dspace" :
-  local_config_source => "file:///home/${dspace::owner}/local.cfg",
-  require => [DSpace::Postgresql_db[$dspace::db_name],             # Must first have a database
-              Exec["Download local.cfg from ${local_cfg_in_s3}"]], # and local.cfg
-  notify  => Service['tomcat'],                       # Tell Tomcat to reboot after install
+  git_repo   => 'git@github.com:DSpace-Labs/demo.dspace.org',
+  git_branch => 'demo',
+  local_config_source => "file:///home/${dspace::owner}/local.cfg", # Install custom local.cfg
+  mvn_params => '-Dmirage2.on=true',                               # Install Mirage 2 theme
+  require    => [DSpace::Postgresql_db[$dspace::db_name],             # Must first have a database
+                 Exec["Download local.cfg from ${local_cfg_in_s3}"]], # and local.cfg
+  notify     => Service['tomcat'],                       # Tell Tomcat to reboot after install
 }
 
 # Create a daily cron job to sync changes to local.cfg up to private S3 folder
@@ -217,9 +241,9 @@ file { "${dspace::catalina_base}/webapps/ROOT":
   mode   => 0700,
 }
 
-# Clone Splash Page code into ROOT webapp
+# Clone Splash Page code into ROOT webapp (from DSpace-Labs/demo.dspace.org-site repo)
 exec { "Cloning demo.dspace.org source into ${dspace::catalina_base}/webapps/ROOT/":
-  command   => "rm -rf * && git clone https://github.com/DSpace/demo.dspace.org.git . && chown -R ${dspace::owner}:${dspace::group} .",
+  command   => "rm -rf * && git clone git@github.com/DSpace-Labs/demo.dspace.org-site.git . && chown -R ${dspace::owner}:${dspace::group} .",
   creates   => "${dspace::catalina_base}/webapps/ROOT/.git",
   cwd       => "${dspace::catalina_base}/webapps/ROOT", # run command from this directory
   logoutput => true,
@@ -251,6 +275,28 @@ file { "/home/${dspace::owner}/bin" :
   target  => "${dspace::catalina_base}/webapps/ROOT/scripts/linux",
   require => Exec["Cloning demo.dspace.org source into ${dspace::catalina_base}/webapps/ROOT/"],
 }
+
+
+#------------------------------------
+# Setup AIPs for initial content
+#------------------------------------
+# Download AIPs from private S3 folder (copy to ~/AIP-restore/)
+$AIPs_in_s3 = "s3://dspacedemo-setup/AIP-restore/"
+$AIP_directory = "/home/${dspace::owner}/AIP-restore/"
+exec { "Download demo AIPs from ${AIPs_in_s3}" :
+  command => "mkdir ${AIP_directory} && /usr/local/bin/aws s3 sync ${AIPs_in_s3} ${AIP_directory} && chown -R ${dspace::owner}:${dspace::group} ${AIP_directory}",
+  creates => $AIP_directory,
+  require => Dspace::Install["/home/${dspace::owner}/dspace"],
+}
+
+# Create a daily cron job to sync changes to ~/.ssh up to private S3 folder
+file { "/etc/cron.daily/sync-AIPs-to-s3" :
+  ensure  => file,
+  mode    => 0755,
+  content => "/usr/local/bin/aws s3 sync ${AIP_directory} ${AIPs_in_s3} --sse",
+  require => Dspace::Install["/home/${dspace::owner}/dspace"],
+}
+
 
 #-------------------------------------
 # Install / Setup Cron Jobs
