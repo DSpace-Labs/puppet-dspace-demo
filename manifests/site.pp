@@ -65,7 +65,7 @@ class { 'dspace':
 dspace::owner { $dspace::owner :
   gid                    => $dspace::group,
   sudoer                 => true,
-  authorized_keys_source => undef,  # We'll copy in our own authorized keys (see below)
+  authorized_keys_source => false,  # We'll copy in our own authorized keys (see below)
 }
 
 # Download SSH info (authorized_keys, etc) from private S3 folder (copy to ~/.ssh/)
