@@ -95,6 +95,15 @@ dspace::postgresql_db { $dspace::db_name :
   require => Dspace::Owner[$dspace::owner],
 }
 
+# Create PG pass file to not require authentication for postgres
+file { "/home/${dspace::owner}/.pgpass" :
+  ensure  => file,
+  owner  => $dspace::owner,
+  group  => $dspace::group,
+  mode    => 0600,
+  content => "localhost:5432:*:postgres:${dspace::db_admin_passwd}",
+}
+
 #-----------------------------------------------------
 # Install Tomcat instance (based on above global settings)
 # Tell it to use owner's ~/dspace/webapps as the webapps location
