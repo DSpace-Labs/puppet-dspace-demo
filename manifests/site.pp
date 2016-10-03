@@ -106,6 +106,8 @@ dspace::tomcat_instance { "/home/${dspace::owner}/dspace/webapps" :
 # Link ~/tomcat to Tomcat installation for easy finding
 file { "/home/${dspace::owner}/tomcat" :
   ensure => link,
+  owner  => $dspace::owner,
+  group  => $dspace::group,
   target => $dspace::catalina_base,
 }
 
@@ -274,6 +276,8 @@ tomcat::config::server::context { 'Enable splashpage at ROOT (/) context in Tomc
 # Link the ~/bin directory to the Linux scripts provided under webapp ./scripts/linux folder
 file { "/home/${dspace::owner}/bin" :
   ensure  => link,
+  owner   => $dspace::owner,
+  group   => $dspace::group,
   target  => "${dspace::catalina_base}/webapps/ROOT/scripts/linux",
   require => Exec["Cloning demo.dspace.org source into ${dspace::catalina_base}/webapps/ROOT/"],
 }
@@ -306,12 +310,15 @@ file { "/etc/cron.daily/sync-AIPs-to-s3" :
 # Install mycrontab (provided in demo.dspace.org source repo)
 file { "/home/${dspace::owner}/mycrontab" :
   ensure  => link,
+  owner   => $dspace::owner,
+  group   => $dspace::group,
   target  => "${dspace::catalina_base}/webapps/ROOT/scripts/linux/crontab",
   require => Exec["Cloning demo.dspace.org source into ${dspace::catalina_base}/webapps/ROOT/"],
 }
 
 exec { "Init Cron Jobs from /home/${dspace::owner}/mycrontab":
   command     => "/usr/bin/crontab /home/${dspace::owner}/mycrontab",
+  user        => $dspace::owner,
   subscribe   => File["/home/${dspace::owner}/mycrontab"],
   refreshonly => true,
 }
