@@ -222,7 +222,7 @@ file_line { 'Add \'dspace\' Tomcat user for PSI Probe':
 #-----------------------------
 # For Java Profiling, install YourKit
 # http://www.yourkit.com/docs/95/help/profiling_j2ee_remote.jsp
-$yourkit_version = "yjp-2016.02-b42"
+$yourkit_version = "yjp-2016.02-b46"
 $yourkit_tarfile = "${yourkit_version}-linux.tar.bz2"
 $yourkit_url = "https://www.yourkit.com/download/${yourkit_tarfile}"
 $yourkit_download = "/opt/${yourkit_tarfile}"
