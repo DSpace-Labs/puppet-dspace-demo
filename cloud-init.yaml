@@ -11,11 +11,11 @@ fqdn: "demo.dspace.org"
 
 # Tells cloud-init to manage /etc/hosts (based on /etc/cloud/templates/hosts.tmpl)
 # NOTE: This sets the configured 'hostname' into /etc/hosts
-manage_etc_hosts: True
+manage_etc_hosts: true
 
 # Add apt repositories
 apt_sources:
- # Enable "multiverse" repos (already enabled by default in our AMI)
+ # Enable "multiverse" repos (already enabled by default in the Ubuntu AMI we use)
  #- source: deb $MIRROR $RELEASE multiverse
  #- source: deb-src $MIRROR $RELEASE multiverse
  #- source: deb $MIRROR $RELEASE-updates multiverse
@@ -59,7 +59,7 @@ runcmd:
  - [sh, -c, "umask 0226; echo 'Defaults env_keep += \"SSH_AUTH_SOCK\"' > /etc/sudoers.d/ssh-auth-sock"]
  # Ensure pip is latest version
  - pip install --upgrade pip
- # Install AWS CLI
+ # Install AWS CLI tools
  - pip install awscli
  # Update rubygems to latest version
  - gem install --no-ri --no-rdoc rubygems-update
@@ -68,15 +68,13 @@ runcmd:
  - PUPPET_DIR="/etc/puppet"
  - rm -rf $PUPPET_DIR/*
  - git clone https://github.com/DSpace-Labs/puppet-dspace-demo.git $PUPPET_DIR
+ # To checkout a different git branch, uncomment below and change branch name
+ #- cd $PUPPET_DIR && git checkout master
  # Install puppet module dependencies (via librarian-puppet)
- - gem install --no-ri --no-rdoc librarian-puppet --version 2.2.3
+ - gem install --no-ri --no-rdoc librarian-puppet --version 3.0.0
  - cd $PUPPET_DIR && HOME=/root librarian-puppet install
  # Run puppet
- # NOTE: PUPPET DISABLED. MUST BE RUN MANUALLY AFTER SERVER INITIALIZES.
- # Currently, when kicked off via cloud-init, the PostgreSQL database fails to startup the first time.
- # Unclear if the problem is in puppet-postgresql, or if it's in cloud-init.
- # However, everything works perfectly when Puppet is run manually after server fully initializes.
- #- puppet apply $PUPPET_DIR/manifests/site.pp -v
+ - puppet apply $PUPPET_DIR/manifests/site.pp -v
 
 # boot commands
 # These are like 'runcmd', but run very early in the boot process & run on every boot by default.
